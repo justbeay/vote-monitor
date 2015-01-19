@@ -41,10 +41,12 @@ function updateVoteControl(){
 			if(voteState == 'start'){
 				voteChart.stopChart();
 				voteState = 'pause';
+				voteControl.find('img').attr('src', './images/play_64.png');
 				console.log('chart paused...');
 			}else if(voteState == 'pause'){
 				voteChart.startChart();
 				voteState = 'start';
+				voteControl.find('img').attr('src', './images/pause_64.png');
 				console.log('chart resumed...');
 			}
 		});

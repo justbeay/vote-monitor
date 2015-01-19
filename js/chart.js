@@ -218,7 +218,8 @@ function VoteChart(){
 				}
 				// put max vote number info into series
 				for(var j=0; j<data[group].length; j++){
-					series[j].data[series[j].data.length-1].winner = series[j].data[series[j].data.length-1].y>=maxVoteNum;
+					series[j].data[series[j].data.length-1].winner = 
+						maxVoteNum>0 && series[j].data[series[j].data.length-1].y>=maxVoteNum;
 				}
 			}
 			if(typeof(callback) == "function"){
