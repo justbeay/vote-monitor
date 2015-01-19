@@ -1,0 +1,80 @@
+<?php
+$dblink = mysql_connect("localhost:3306", 'root', '123456');
+mysql_select_db('test', $dblink) or die('Could not select database.');
+$result = array();
+$sql = "select * from tb_vote";
+$queryResult = mysql_query($sql, $dblink);
+while($row = mysql_fetch_array($queryResult)){
+	$group = $row['group'];
+	if(!array_key_exists($group, $result)){
+		$result[$group] = array();
+	}
+	array_push($result[$group], $row['name']);
+}
+mysql_close($dblink);
+?>
+<html>
+<head>
+	<title>vote</title>
+	<script type="text/javascript" src="../js/jquery/jquery-1.8.2.min.js"></script>
+</head>
+<body>
+<h1>投票模拟</h1>
+<?php foreach($result as $group=>$users){ ?>
+	<label><?php echo $group ?></label>
+	<div id="<?php echo $group ?>">
+		<input type="hidden" name="group" value="<?php echo $group ?>" />
+		<select name="name">
+		<?php foreach($users as $user){ ?>
+			<option><?php echo $user ?></option>
+		<?php } ?>
+		</select>
+		<button onclick="vote($(this).parent())">submit</button>
+		<input type="checkbox" name="auto" />自动
+	</div>
+<?php } ?>
+<br>
+<button onclick="resetVote()">重置投票结果</button>
+<script type="text/javascript">
+	function resetVote(){
+		$.getJSON('./vote.php?reset=true', function(data){
+			if(data.status == 'success'){
+				console.log('投票结果重置成功');
+			}else{
+				console.log('投票结果重置失败');
+			}
+		});
+	}
+	function vote(div){
+		var group = div.find("[name='group']").val();
+		var name = div.find("[name='name']").val();
+		
+		$.getJSON('./vote.php?group='+group+'&name='+name, function(data){
+			if(data.status == 'success'){
+				console.log(group+'-'+name+' 投票成功');
+			}else{
+				console.log(group+'-'+name+' 投票失败');
+			}
+		});
+	}
+	var autoVoteEles = $('div').find("input[type='checkbox']");
+	var autoTimers = new Array();
+	autoVoteEles.change(function(){
+		var parentEle = $(this).parent();
+		var group = parentEle.find("[name='group']").val();
+		if(this.checked){
+			var timer = setInterval(function(){
+				vote(parentEle);
+			}, 500);
+			if(!autoTimers[group]) autoTimers[group] = new Array();
+			autoTimers[group].push(timer);
+		}else{
+			while(autoTimers[group] && autoTimers[group].length > 0){
+				clearInterval(autoTimers[group].pop());
+			}
+		}
+	});
+
+</script>
+</body>
+</html>
